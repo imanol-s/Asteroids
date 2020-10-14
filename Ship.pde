@@ -56,7 +56,6 @@ class Ship extends GameObject
   }
   
   void processKeys() 
-  //implement thrusting feature
   {
     if (focused) {
       if (kbController.isUp()) {
@@ -80,9 +79,9 @@ class Ship extends GameObject
         direction -= rotInc;
         setRot(direction);
       }
-      //thrusts rocket (needs to be fixed only moves to the right as of now 10/14/20
+      //thrusts rocket || add energy to acceleration 
         if (kbController.istUp()) {    
-          setAcceleration(boost);
+          setAcceleration(boost, direction - 1.5708);
       }
     }
   }
