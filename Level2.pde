@@ -9,7 +9,8 @@ class AsteroidsLevel2 extends GameLevel
   CopyOnWriteArrayList<GameObject> asteroids;
   CopyOnWriteArrayList<GameObject> missiles;
   CopyOnWriteArrayList<GameObject> explosions;
-
+  CopyOnWriteArrayList<GameObject> hearts;
+  
   int numLives;
   int maxLives = 3;
   float missileSpeed = 200;
@@ -32,6 +33,11 @@ class AsteroidsLevel2 extends GameLevel
     asteroids.add(new BigAsteroid(applet, 100, 300, 2, 0.01, 22, PI*1.7));
     asteroids.add(new BigAsteroid(applet, 500, 600, 0, -0.02, 22, PI*1.3));
 
+    hearts= new CopyOnWriteArrayList<GameObject>();
+    hearts.add(new Hearts(applet,width-75,50));
+    hearts.add(new Hearts(applet,width-150,50)); 
+    hearts.add(new Hearts(applet,width-225,50));
+    
     gameState = GameState.Running;
   }
 
@@ -53,6 +59,12 @@ class AsteroidsLevel2 extends GameLevel
     for (GameObject explosion : explosions) {
       explosion.setDead();
       explosions.remove(explosion);
+    }
+    
+    for (GameObject heart: hearts)
+    {
+      heart.setDead();
+      hearts.remove(heart);
     }
   }
 
@@ -210,6 +222,8 @@ class AsteroidsLevel2 extends GameLevel
         ship.setDead();
         if (++numLives < maxLives) {
           ship = new Ship(applet, width/2, height/2);
+          hearts.get(hearts.lastIndexOf(hearts)+1).update();
+          hearts.remove(hearts.lastIndexOf(hearts)+1);
         } else {
           gameState = GameState.Lost;
         }
