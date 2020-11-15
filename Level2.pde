@@ -10,11 +10,21 @@ class AsteroidsLevel2 extends GameLevel
   CopyOnWriteArrayList<GameObject> missiles;
   CopyOnWriteArrayList<GameObject> explosions;
   CopyOnWriteArrayList<GameObject> hearts;
+  CopyOnWriteArrayList<GameObject> powerUps;
   
   int numLives;
   int maxLives = 3;
   float missileSpeed = 200;
-
+  
+  boolean doubleShotTrue = false;
+  boolean doubleSpeedTrue= false;
+  
+  boolean isDoubleShot = false;
+  boolean isAddLives = false;
+  boolean isDoubleSpeed = false;
+  
+  int currentHeartPlace= width-225;
+  
   AsteroidsLevel2(PApplet applet)
   {
     super(applet);
@@ -23,10 +33,13 @@ class AsteroidsLevel2 extends GameLevel
 
   void start()
   {
+    int randomNum= (int) (Math.random()*3);
+    
     ship = new Ship(applet, width/2, height/2);
     missiles = new CopyOnWriteArrayList<GameObject>();
     explosions = new CopyOnWriteArrayList<GameObject>();
-
+    powerUps= new CopyOnWriteArrayList<GameObject>();
+    
     asteroids = new CopyOnWriteArrayList<GameObject>();
     asteroids.add(new BigAsteroid(applet, 200, 500, 0, 0.02, 22, PI*.5));
     asteroids.add(new BigAsteroid(applet, 500, 200, 1, -0.01, 22, PI*1));
@@ -34,9 +47,22 @@ class AsteroidsLevel2 extends GameLevel
     asteroids.add(new BigAsteroid(applet, 500, 600, 0, -0.02, 22, PI*1.3));
 
     hearts= new CopyOnWriteArrayList<GameObject>();
-    hearts.add(new Hearts(applet,width-75,50));
-    hearts.add(new Hearts(applet,width-150,50)); 
-    hearts.add(new Hearts(applet,width-225,50));
+    hearts.add(new Hearts(applet,currentHeartPlace,50));
+    hearts.add(new Hearts(applet,currentHeartPlace+75,50)); 
+    hearts.add(new Hearts(applet,currentHeartPlace+150,50)); 
+    
+    if(randomNum==0){
+    powerUps.add(new DoubleShot(applet, (int) (Math.random()*(800))+100, (int) (Math.random()*(600))+100));
+    isDoubleShot = true;
+    }
+    else if(randomNum==1){
+    powerUps.add(new AddLives(applet, (int) (Math.random()*(800))+100, (int) (Math.random()*(600))+100));
+    isAddLives = true;
+    }
+    else{
+    powerUps.add(new DoubleSpeed(applet, (int) (Math.random()*(800))+100, (int) (Math.random()*(600))+100));
+    isDoubleSpeed = true;
+    }
     
     gameState = GameState.Running;
   }
@@ -66,6 +92,12 @@ class AsteroidsLevel2 extends GameLevel
       heart.setDead();
       hearts.remove(heart);
     }
+    
+    for (GameObject powerUp : powerUps)
+    {
+      powerUp.setDead();
+      powerUps.remove(powerUp);
+    }
   }
 
   void restart()
@@ -83,6 +115,7 @@ class AsteroidsLevel2 extends GameLevel
     } 
     checkShipCollisions();
     checkMissileCollisions();
+    checkShipPowerUp();
   }
 
   private boolean isGameOver() 
@@ -118,9 +151,16 @@ class AsteroidsLevel2 extends GameLevel
   void keyPressed() 
   {
     if ( key == ' ') {
-      if (!ship.isDead()) {
-        launchMissile(missileSpeed);
+      if (doubleShotTrue == true){
+        launchTwoMissiles(missileSpeed);
       }
+      else if(doubleSpeedTrue)
+      {
+        launchMissile(missileSpeed*2);
+      }
+       else if (!ship.isDead()) {
+        launchMissile(missileSpeed);
+      }    
     }
   }
 
@@ -146,6 +186,12 @@ class AsteroidsLevel2 extends GameLevel
       if (explosion.isDead()) {
         explosions.remove(explosion);
       }
+    }
+    
+    for(GameObject powerUp : powerUps){
+       if(powerUp.isDead()){
+         powerUps.remove(powerUp);
+       } 
     }
   }
 
@@ -176,6 +222,25 @@ class AsteroidsLevel2 extends GameLevel
       missiles.add(missile);
 
       ship.energy -= ship.deplete;
+    }
+  }
+  
+  private void launchTwoMissiles(float speed)
+  {
+    if(ship.energy >=.2){
+        int shipx = (int) ship.getX();
+        int shipy = (int) ship.getY();
+        Missile missile1 = new Missile(applet,shipx,shipy);
+        Missile missile2 = new Missile(applet,shipx,shipy);
+        missile1.setRot(ship.getRot() -1.7694);
+        missile1.setSpeed(speed);
+        missile2.setRot(ship.getRot() -1.3722);
+        missile2.setSpeed(speed);       
+        missiles.add(missile1);
+        missiles.add(missile2);
+    
+        ship.energy -=ship.deplete;
+        
     }
   }
 
@@ -224,8 +289,13 @@ class AsteroidsLevel2 extends GameLevel
           ship = new Ship(applet, width/2, height/2);
           hearts.get(hearts.lastIndexOf(hearts)+1).update();
           hearts.remove(hearts.lastIndexOf(hearts)+1);
+          currentHeartPlace+=75;
+          doubleShotTrue=false;
+          doubleSpeedTrue=false;
         } else {
           gameState = GameState.Lost;
+          doubleShotTrue=false;
+          doubleSpeedTrue=false;
         }
 
         asteroid.setDead();
@@ -237,6 +307,37 @@ class AsteroidsLevel2 extends GameLevel
         break; // only happens once
       }
     }
+  }
+  
+   private void checkShipPowerUp()
+  {
+   if(ship.isDead()) 
+   return;
+   
+   if (ship.getX() == width/2 && ship.getY() == height/2) return;
+   
+   for(GameObject powerUp : powerUps)
+   {
+    if(isDoubleShot && !powerUp.isDead() && ship.checkCollision(powerUp)){
+      powerUp.update();
+      powerUp.setDead();
+      powerUps.remove(powerUp);
+      doubleShotTrue = true;
+    }
+    else if(isAddLives && !powerUp.isDead() && ship.checkCollision(powerUp)){
+      powerUp.update();
+      powerUp.setDead();
+      powerUps.remove(powerUp);
+      hearts.add(0,new Hearts(applet,currentHeartPlace-75,50));
+      maxLives++;
+    }
+    else if(isDoubleSpeed && !powerUp.isDead() && ship.checkCollision(powerUp)){
+     powerUp.update();
+     powerUp.setDead();
+     powerUps.remove(powerUp);
+     doubleSpeedTrue = true;
+    }
+   }
   }
 
   private void addSmallAsteroids(GameObject go) 
