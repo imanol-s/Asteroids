@@ -3,7 +3,7 @@ class Hearts extends GameObject
 
   Hearts (PApplet applet, int xpos, int ypos)
   {
-    super(applet, "onHeart.png", 40);
+    super(applet, "heart.png", 40);
 
     setXY(xpos,ypos);
     setScale(0.05);  
