@@ -64,6 +64,7 @@ class StartLevel extends GameLevel
   {
     startButton = new StartButton(applet, width/2, height/2, this);
     gameState = GameState.Running;
+    soundPlayer.playBackgroundMusic();
   }
 
   void stop()
@@ -110,7 +111,10 @@ class LoseLevel extends GameLevel
     gameOver = new GameOver(applet, width/2, height/2);
     gameOver.trigger();
     
+    soundPlayer.stopBackgroundMusic();
+    
     soundPlayer.playGameOver();
+    
 
     gameState = GameState.Running;
   }
@@ -162,6 +166,7 @@ class WinLevel extends GameLevel
   {
     triggerTime = System.currentTimeMillis();
 
+    soundPlayer.stopBackgroundMusic();
     soundPlayer.playOhYea();
 
     ohYea = new OhYea(applet, width/2, height/2);
