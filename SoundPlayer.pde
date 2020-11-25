@@ -11,6 +11,7 @@ class SoundPlayer
   AudioSample boomPlayer, popPlayer, gameOverPlayer;
   AudioSample explosionLargeAsteroid, explosionShip, explosionSmallAsteroid;
   AudioSample ohYea, missileLaunch, powerUp;
+  AudioPlayer backgroundMusic;
   SoundPlayer(Object app) 
   {
     minimplay = new Minim(app); 
@@ -24,6 +25,10 @@ class SoundPlayer
     ohYea = minimplay.loadSample("OhYea.wav", 1024);
     missileLaunch = minimplay.loadSample("MissileLaunch.wav", 1024);
     powerUp=minimplay.loadSample("powerUp.wav", 1024);
+    backgroundMusic = minimplay.loadFile("bgMusic.wav", 2048);
+    backgroundMusic.play();
+    backgroundMusic.loop();
+    
   }
 
   void playExplosion() 
@@ -69,5 +74,13 @@ class SoundPlayer
   void playMissileLaunch() 
   {
     missileLaunch.trigger();
+  }
+  void stopBackgroundMusic()
+  {
+    backgroundMusic.close();
+  }
+  void playBackgroundMusic()
+  {
+    
   }
 }
